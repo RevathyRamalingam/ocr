@@ -2,10 +2,18 @@ import os
 import pytesseract
 from docx import Document
 from pdf2image import convert_from_path
-from pypdf import PdfReader
 from PIL import Image
 
-def extract_text_from_file(file_path):
+def _perform_ocr_on_pdf(file_path):
+    """Helper function to perform OCR on a PDF file."""
+    images = convert_from_path(file_path)
+    ocr_text = ""
+    for i, image in enumerate(images):
+        print(f"Processing page {i+1}...")
+        ocr_text += pytesseract.image_to_string(image) + "\n"
+    return ocr_text
+
+def extract_text_from_file(file_path, force_ocr=False):
     """
     Extract text from a file based on its extension.
     Supports: .png, .jpg, .jpeg, .pdf, .docx
@@ -23,27 +31,9 @@ def extract_text_from_file(file_path):
         return "\n".join([para.text for para in doc.paragraphs])
     
     elif ext == '.pdf':
-        try:
-            # Try extracting text directly
-            reader = PdfReader(file_path)
-            text = ""
-            for page in reader.pages:
-                text += page.extract_text() or ""
-            
-            # If text is too short, assume it's a scanned PDF and use OCR
-            if len(text.strip()) < 50:
-                print("PDF seems to be scanned. Performing OCR on PDF pages...")
-                images = convert_from_path(file_path)
-                ocr_text = ""
-                for i, image in enumerate(images):
-                    print(f"Processing page {i+1}...")
-                    ocr_text += pytesseract.image_to_string(image) + "\n"
-                return ocr_text
-            
-            return text
-        except Exception as e:
-            raise ValueError(f"Error reading PDF: {e}")
-            
+        print("Performing OCR on PDF pages...")
+        return _perform_ocr_on_pdf(file_path)
+
     elif ext == '.doc':
         # Legacy DOC support is tricky without external tools like 'antiword' or 'libreoffice'
         raise ValueError("legacy .doc format is not directly supported. Please convert it to .docx or .pdf")

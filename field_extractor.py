@@ -24,8 +24,9 @@ async def main():
         print("Invalid selection. Please choose 'openai' or 'groq'.")
 
     # 2. Get Fields to Extract
-    fields_input = input("Enter fields to extract (comma-separated, e.g. 'full_name, email, phone'): ").strip()
+    fields_input = input("Enter fields to extract (comma-separated, e.g. 'field1,field2,field3'): ").strip()
     field_names = [f.strip() for f in fields_input.split(',') if f.strip()]
+    print("fieldnames inputed are ",field_names)
     
     if not field_names:
         print("No fields specified. Exiting.")
@@ -40,7 +41,7 @@ async def main():
     try:
         # Perform Extraction
         print(f"\nExtracting text from {file_path}...")
-        extracted_text = ocr_generator.extract_text_from_file(file_path)
+        extracted_text = ocr_generator.extract_text_from_file(file_path, force_ocr=True)
         print(f"Extraction complete. Extracted {len(extracted_text)} characters.")
         
         # Initialize Logic
